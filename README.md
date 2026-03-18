@@ -44,7 +44,7 @@ Click the ⚙ icon in the Orb window, enter your API key, and hit Save.
 
 | Provider | Model field | Notes |
 |---|---|---|
-| **Anthropic** | `claude-sonnet-4-20250514` | Default. Needs API key. |
+| **Anthropic** | `claude-sonnet-4.6` | Default. Needs API key. |
 | **OpenAI** | `gpt-4o` | Needs API key. |
 | **OpenAI-compatible** | your model name | Set custom endpoint URL |
 | **Ollama** | `llama3`, `mistral`, etc. | Run `ollama serve` first |
@@ -78,7 +78,7 @@ Located at `~/.orb-assistant/config.json`. You can edit this directly:
 {
   "provider": "anthropic",
   "apiKey": "sk-ant-...",
-  "model": "claude-sonnet-4-20250514",
+  "model": "claude-sonnet-4.6",
   "audienceLevel": "professional",
   "hotkey": "CommandOrControl+Shift+Space",
   "screenshotOnActivate": true
