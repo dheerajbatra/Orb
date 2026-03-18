@@ -32,7 +32,7 @@ Click the ⚙ icon in the Orb window, choose a provider, enter your API key, and
 - **Floating overlay** — always on top, transparent background, drag anywhere, position remembered across restarts
 - **Global hotkey** — `⌘⇧Space` to show/hide from any app (customizable)
 - **Screen capture** — capture the active window or draw a custom region for visual context
-- **Multi-provider** — Anthropic, OpenAI, OpenRouter, any OpenAI-compatible API, Ollama, LM Studio
+- **Multi-provider** — Anthropic, OpenAI, OpenRouter, any OpenAI-compatible API, Ollama, LM Studio. Also tested with Mac compatible MLX models. 
 - **Chat history** — sessions auto-saved to disk, browseable in the sidebar, individually deletable
 - **Dark & Light mode** — toggle in Settings, applied instantly
 - **Response modes** — get a direct answer, a step-by-step walkthrough, or just a hint
