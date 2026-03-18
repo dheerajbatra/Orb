@@ -4,6 +4,12 @@ A floating AI overlay that lives on your Mac desktop. Works with Claude, OpenAI,
 
 ---
 
+<img width="1440" height="827" alt="Orb - Step by Step Guide" src="https://github.com/user-attachments/assets/59db21d4-79a7-410c-9917-89d6561ecaf5" />
+<video src="https://github.com/user-attachments/assets/0963df75-a369-42f7-8e66-5c1d2153279c" type="video/mp4"></video>
+<img width="507" height="811" alt="Orb - Maths Assistant" src="https://github.com/user-attachments/assets/f20294f6-63fc-44e9-af11-e1a1e093e5f2" />
+
+---
+
 ## Quick Start
 
 ### 1. Install dependencies
