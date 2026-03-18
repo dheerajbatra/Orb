@@ -231,3 +231,7 @@ orb-assistant/
 ## Tray icon
 
 Place a 22x22px PNG at `assets/tray-icon.png`. For Retina, also add `assets/tray-icon@2x.png`. A simple circle or the ✦ symbol works well as a monochrome template image — macOS handles dark/light menu bar automatically.
+
+<img width="1068" height="697" alt="Dark Mode" src="https://github.com/user-attachments/assets/1e398dfd-1603-4f5d-9fb1-91a7980496d6" />
+
+
