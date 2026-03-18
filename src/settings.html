@@ -1,0 +1,484 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orb Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: rgba(10,10,16,0.97);
+  --bg2: rgba(20,20,32,0.98);
+  --bg3: rgba(28,28,42,0.9);
+  --border: rgba(255,255,255,0.07);
+  --border2: rgba(255,255,255,0.13);
+  --text: rgba(255,255,255,0.88);
+  --text2: rgba(255,255,255,0.48);
+  --text3: rgba(255,255,255,0.24);
+  --accent: #7c6af7;
+  --accent-s: rgba(124,106,247,0.14);
+  --accent-g: rgba(124,106,247,0.32);
+  --green: #4ade80;
+  --red: #f87171;
+  --amber: #fbbf24;
+  --r: 16px;
+  --mono: 'Geist Mono', monospace;
+  --body: 'Geist', sans-serif;
+  --serif: 'Instrument Serif', serif;
+}
+.light {
+  --bg: rgba(248,248,252,0.97);
+  --bg2: rgba(240,240,248,0.98);
+  --bg3: rgba(232,232,244,0.9);
+  --border: rgba(0,0,0,0.07);
+  --border2: rgba(0,0,0,0.13);
+  --text: rgba(0,0,0,0.85);
+  --text2: rgba(0,0,0,0.45);
+  --text3: rgba(0,0,0,0.25);
+  --accent: #6254e8;
+  --accent-s: rgba(98,84,232,0.1);
+  --accent-g: rgba(98,84,232,0.28);
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:transparent;font-family:var(--body);-webkit-font-smoothing:antialiased;overflow:hidden;}
+
+.shell {
+  width:100%;height:100%;
+  background:var(--bg);
+  border-radius:var(--r);
+  border:1px solid var(--border);
+  display:flex;flex-direction:column;
+  overflow:hidden;
+  box-shadow:0 32px 80px rgba(0,0,0,0.55);
+  animation:fadeIn 0.22s ease;
+  transition: background 0.2s, border-color 0.2s;
+}
+@keyframes fadeIn{from{opacity:0;transform:scale(0.97);}to{opacity:1;transform:scale(1);}}
+
+/* Title bar */
+.title-bar {
+  -webkit-app-region:drag;
+  display:flex;align-items:center;gap:10px;
+  padding:14px 18px 12px;
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;
+}
+.tb-icon{font-size:18px;}
+.tb-title{font-size:15px;font-weight:600;color:var(--text);}
+.tb-sub{font-size:11px;color:var(--text2);margin-top:1px;}
+.tb-actions{-webkit-app-region:no-drag;margin-left:auto;display:flex;gap:6px;align-items:center;}
+
+.icon-btn {
+  width:28px;height:28px;border-radius:8px;border:1px solid var(--border);
+  background:transparent;color:var(--text2);cursor:pointer;font-size:13px;
+  display:flex;align-items:center;justify-content:center;transition:all 0.15s;
+}
+.icon-btn:hover{background:rgba(248,113,113,0.1);border-color:var(--red);color:var(--red);}
+
+/* Content */
+.content {
+  flex:1;overflow-y:auto;padding:18px 20px;
+  display:flex;flex-direction:column;gap:18px;
+  scrollbar-width:thin;scrollbar-color:var(--border2) transparent;
+}
+.content::-webkit-scrollbar{width:4px;}
+.content::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* Section */
+.section{display:flex;flex-direction:column;gap:10px;}
+.sec-title {
+  font-size:10px;font-family:var(--mono);color:var(--text3);
+  text-transform:uppercase;letter-spacing:0.1em;
+  padding-bottom:6px;border-bottom:1px solid var(--border);
+}
+
+/* Field */
+.field{display:flex;flex-direction:column;gap:5px;}
+.field-row{display:flex;gap:8px;align-items:flex-end;}
+.field-row .field{flex:1;}
+label{font-size:12px;color:var(--text2);font-weight:500;}
+.hint{font-size:10.5px;color:var(--text3);font-family:var(--mono);line-height:1.4;}
+
+input[type="text"],input[type="password"],select,textarea.ta {
+  width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:9px;
+  padding:9px 12px;font-size:13px;color:var(--text);font-family:var(--body);
+  outline:none;transition:border-color 0.2s;-webkit-user-select:text;user-select:text;
+}
+input:focus,select:focus,textarea.ta:focus{border-color:var(--accent-g);}
+input::placeholder{color:var(--text3);}
+select{cursor:pointer;appearance:none;}
+select option{background:#13131f;color:#ddd;}
+.light select option{background:#f0f0f8;color:#222;}
+
+/* Provider tabs */
+.ptabs{display:flex;gap:3px;background:var(--bg3);border:1px solid var(--border);border-radius:11px;padding:4px;flex-wrap:wrap;}
+.ptab {
+  flex:1;min-width:80px;padding:7px 8px;border-radius:8px;border:none;
+  background:transparent;color:var(--text2);font-size:11.5px;cursor:pointer;
+  transition:all 0.15s;font-family:var(--body);text-align:center;white-space:nowrap;
+}
+.ptab.active{background:var(--accent-s);color:var(--accent);}
+.ptab:hover:not(.active){color:var(--text);}
+
+/* Model presets */
+.presets{display:flex;flex-wrap:wrap;gap:5px;margin-top:2px;}
+.preset {
+  padding:4px 10px;border-radius:20px;border:1px solid var(--border);
+  background:transparent;color:var(--text2);font-size:10.5px;cursor:pointer;
+  transition:all 0.15s;font-family:var(--mono);
+}
+.preset:hover{border-color:var(--border2);color:var(--text);}
+.preset.active{background:var(--accent-s);border-color:var(--accent-g);color:var(--accent);}
+
+/* Toggle */
+.toggle-row{display:flex;align-items:center;justify-content:space-between;gap:12px;}
+.toggle-label{font-size:12px;color:var(--text2);line-height:1.4;}
+.toggle{
+  width:38px;height:22px;border-radius:11px;background:var(--border2);
+  border:none;cursor:pointer;position:relative;transition:background 0.2s;flex-shrink:0;
+}
+.toggle.on{background:var(--accent);}
+.toggle::after{
+  content:'';position:absolute;top:3px;left:3px;
+  width:16px;height:16px;border-radius:50%;background:#fff;
+  transition:transform 0.2s;
+}
+.toggle.on::after{transform:translateX(16px);}
+
+/* Theme toggle row */
+.theme-row{display:flex;align-items:center;gap:10px;}
+.theme-btn {
+  flex:1;padding:8px;border-radius:9px;border:1px solid var(--border);
+  background:transparent;color:var(--text2);font-size:12px;cursor:pointer;
+  transition:all 0.15s;font-family:var(--body);text-align:center;
+}
+.theme-btn.active{background:var(--accent-s);border-color:var(--accent-g);color:var(--accent);}
+
+/* Test result */
+.test-result{font-size:11.5px;font-family:var(--mono);padding:8px 12px;border-radius:8px;display:none;line-height:1.5;}
+.test-result.ok{background:rgba(74,222,128,0.1);color:var(--green);border:1px solid rgba(74,222,128,0.2);display:block;}
+.test-result.err{background:rgba(248,113,113,0.08);color:var(--red);border:1px solid rgba(248,113,113,0.2);display:block;word-break:break-all;}
+
+/* Footer */
+.footer{
+  padding:14px 20px;border-top:1px solid var(--border);
+  display:flex;gap:8px;align-items:center;flex-shrink:0;
+}
+.save-btn{
+  flex:1;padding:10px;border-radius:10px;background:var(--accent);border:none;
+  color:#fff;font-size:13px;font-weight:500;cursor:pointer;
+  transition:opacity 0.15s,transform 0.15s;font-family:var(--body);
+}
+.save-btn:hover{opacity:0.88;}
+.save-btn:active{transform:scale(0.98);}
+.test-btn{
+  padding:10px 16px;border-radius:10px;background:transparent;
+  border:1px solid var(--border2);color:var(--text2);font-size:13px;
+  cursor:pointer;transition:all 0.15s;font-family:var(--body);white-space:nowrap;
+}
+.test-btn:hover{color:var(--text);border-color:var(--accent);}
+
+/* Info callout */
+.info-box{
+  padding:8px 12px;border-radius:8px;
+  background:rgba(124,106,247,0.06);border:1px solid var(--accent-s);
+  font-size:11px;color:var(--text2);font-family:var(--mono);line-height:1.5;
+}
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div class="shell" id="shell">
+  <div class="title-bar">
+    <span class="tb-icon">⚙</span>
+    <div>
+      <div class="tb-title">Settings</div>
+      <div class="tb-sub">Orb Desktop Assistant</div>
+    </div>
+    <div class="tb-actions">
+      <button class="icon-btn" onclick="closeSettings()" title="Close">✕</button>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- Theme -->
+    <div class="section">
+      <div class="sec-title">Appearance</div>
+      <div class="theme-row">
+        <button class="theme-btn active" id="themeDark" onclick="setTheme('dark')">🌙 Dark</button>
+        <button class="theme-btn" id="themeLight" onclick="setTheme('light')">☀️ Light</button>
+      </div>
+    </div>
+
+    <!-- Provider -->
+    <div class="section">
+      <div class="sec-title">AI Provider</div>
+      <div class="ptabs" id="ptabs">
+        <button class="ptab active" data-p="anthropic"         onclick="selectProvider(this)">Anthropic</button>
+        <button class="ptab"        data-p="openai"            onclick="selectProvider(this)">OpenAI</button>
+        <button class="ptab"        data-p="openrouter"        onclick="selectProvider(this)">OpenRouter</button>
+        <button class="ptab"        data-p="openai-compatible" onclick="selectProvider(this)">Custom</button>
+        <button class="ptab"        data-p="ollama"            onclick="selectProvider(this)">Ollama</button>
+        <button class="ptab"        data-p="lmstudio"          onclick="selectProvider(this)">LM Studio</button>
+      </div>
+    </div>
+
+    <!-- API Key -->
+    <div class="section" id="sec-apikey">
+      <div class="sec-title" id="apikey-title">API Key</div>
+      <div class="field">
+        <input type="password" id="apiKeyInput" placeholder="sk-ant-..." autocomplete="off">
+        <span class="hint">Stored locally in ~/.orb-assistant/config.json — never sent anywhere else.</span>
+      </div>
+    </div>
+
+    <!-- Custom endpoint -->
+    <div class="section hidden" id="sec-endpoint">
+      <div class="sec-title">Endpoint URL</div>
+      <div class="field">
+        <input type="text" id="endpointInput" placeholder="http://localhost:11434/api/chat">
+        <span class="hint" id="endpoint-hint">Leave blank to use the default local endpoint.</span>
+      </div>
+    </div>
+
+    <!-- Model -->
+    <div class="section">
+      <div class="sec-title">Model</div>
+      <div class="field">
+        <input type="text" id="modelInput" placeholder="e.g. claude-sonnet-4-20250514">
+        <div class="presets" id="modelPresets"></div>
+        <span class="hint" id="model-hint">Type any model name, or click a preset above.</span>
+      </div>
+    </div>
+
+    <!-- Info box (context-sensitive) -->
+    <div class="info-box hidden" id="infoBox"></div>
+
+    <!-- Behavior -->
+    <div class="section">
+      <div class="sec-title">Behavior</div>
+      <div class="toggle-row">
+        <span class="toggle-label">Capture screen when activated with hotkey</span>
+        <button class="toggle" id="ssToggle" onclick="this.classList.toggle('on')"></button>
+      </div>
+      <div class="field" style="margin-top:10px;">
+        <label>Global hotkey</label>
+        <input type="text" id="hotkeyInput" placeholder="CommandOrControl+Shift+Space">
+        <span class="hint">Uses Electron accelerator syntax. Restart app to apply changes.</span>
+      </div>
+    </div>
+
+    <!-- Default audience -->
+    <div class="section">
+      <div class="sec-title">Default Audience Level</div>
+      <div class="presets">
+        <button class="preset" data-a="highschool"  onclick="selectAudience(this)">High School</button>
+        <button class="preset" data-a="college"     onclick="selectAudience(this)">College</button>
+        <button class="preset active" data-a="professional" onclick="selectAudience(this)">Professional</button>
+      </div>
+    </div>
+
+    <div id="testResult" class="test-result"></div>
+
+  </div>
+
+  <div class="footer">
+    <button class="test-btn" onclick="testConnection()">Test Connection</button>
+    <button class="save-btn" onclick="saveSettings()">Save &amp; Close</button>
+  </div>
+</div>
+
+<script>
+const PRESETS = {
+  anthropic: [
+    {l:'claude-sonnet-4',    v:'claude-sonnet-4-20250514'},
+    {l:'claude-opus-4',      v:'claude-opus-4-20250514'},
+    {l:'claude-haiku-3.5',   v:'claude-haiku-3-5-20241022'},
+  ],
+  openai: [
+    {l:'gpt-4o',       v:'gpt-4o'},
+    {l:'gpt-4o-mini',  v:'gpt-4o-mini'},
+    {l:'o3-mini',      v:'o3-mini'},
+  ],
+  openrouter: [
+    {l:'nemotron-70b',        v:'nvidia/llama-3.1-nemotron-70b-instruct'},
+    {l:'deepseek-r1',         v:'deepseek/deepseek-r1'},
+    {l:'gemini-flash-2.0',    v:'google/gemini-flash-2.0'},
+    {l:'mistral-large',       v:'mistralai/mistral-large'},
+    {l:'qwen-2.5-72b',        v:'qwen/qwen-2.5-72b-instruct'},
+  ],
+  'openai-compatible': [
+    {l:'custom-model', v:'custom-model'},
+  ],
+  ollama: [
+    {l:'llama3.2',     v:'llama3.2'},
+    {l:'llama3.1',     v:'llama3.1'},
+    {l:'mistral',      v:'mistral'},
+    {l:'codellama',    v:'codellama'},
+    {l:'qwen2.5-coder',v:'qwen2.5-coder'},
+    {l:'phi4',         v:'phi4'},
+    {l:'deepseek-r1',  v:'deepseek-r1'},
+    {l:'gemma3',       v:'gemma3'},
+  ],
+  lmstudio: [
+    {l:'(loaded model)', v:'loaded-model'},
+  ],
+}
+
+const INFOS = {
+  openrouter: 'Get a free API key at openrouter.ai — access 100+ models including Nemotron, DeepSeek, Gemini, and more.',
+  ollama: 'Run `ollama serve` in Terminal first. Install models with `ollama pull llama3.2`. Endpoint defaults to localhost:11434.',
+  lmstudio: 'Start LM Studio → Local Server → Start Server. Use the model identifier shown in LM Studio. Endpoint defaults to localhost:1234.',
+  'openai-compatible': 'Works with any OpenAI-compatible API. Set the full endpoint URL including /v1/chat/completions path.',
+}
+
+const ENDPOINT_HINTS = {
+  ollama: 'Default: http://localhost:11434/api/chat',
+  lmstudio: 'Default: http://localhost:1234/v1/chat/completions',
+  'openai-compatible': 'Full URL e.g. http://localhost:8080/v1/chat/completions',
+}
+
+let currentProvider = 'anthropic'
+let currentAudience = 'professional'
+let currentTheme = 'dark'
+let config = {}
+
+async function init () {
+  config = await window.orb.getConfig()
+  currentProvider = config.provider || 'anthropic'
+  currentAudience = config.audienceLevel || 'professional'
+  currentTheme = config.theme || 'dark'
+
+  document.getElementById('apiKeyInput').value = config.apiKey || ''
+  document.getElementById('modelInput').value = config.model || ''
+  document.getElementById('endpointInput').value = config.customEndpoint || ''
+  document.getElementById('hotkeyInput').value = config.hotkey || 'CommandOrControl+Shift+Space'
+  if (config.screenshotOnActivate) document.getElementById('ssToggle').classList.add('on')
+
+  applyTheme(currentTheme)
+  syncProviderTabs()
+  updateModelPresets()
+  updateProviderUI()
+  syncAudiencePills()
+}
+
+function applyTheme (t) {
+  currentTheme = t
+  document.getElementById('shell').className = t === 'light' ? 'shell light' : 'shell'
+  document.getElementById('themeDark').classList.toggle('active', t === 'dark')
+  document.getElementById('themeLight').classList.toggle('active', t === 'light')
+}
+function setTheme (t) { applyTheme(t) }
+
+function syncProviderTabs () {
+  document.querySelectorAll('.ptab').forEach(b => b.classList.toggle('active', b.dataset.p === currentProvider))
+}
+
+function selectProvider (el) {
+  currentProvider = el.dataset.p
+  syncProviderTabs()
+  updateModelPresets()
+  updateProviderUI()
+  // auto-set first preset model
+  const presets = PRESETS[currentProvider] || []
+  if (presets.length && !document.getElementById('modelInput').value) {
+    document.getElementById('modelInput').value = presets[0].v
+  }
+}
+
+function updateProviderUI () {
+  const needsKey = !['ollama','lmstudio'].includes(currentProvider)
+  const needsEndpoint = ['ollama','lmstudio','openai-compatible'].includes(currentProvider)
+
+  document.getElementById('sec-apikey').classList.toggle('hidden', !needsKey)
+  document.getElementById('sec-endpoint').classList.toggle('hidden', !needsEndpoint)
+
+  const labels = {
+    anthropic: 'Anthropic API Key',
+    openai: 'OpenAI API Key',
+    openrouter: 'OpenRouter API Key',
+    'openai-compatible': 'API Key (if required)',
+  }
+  const titleEl = document.getElementById('apikey-title')
+  if (titleEl) titleEl.textContent = labels[currentProvider] || 'API Key'
+
+  const hintEl = document.getElementById('endpoint-hint')
+  if (hintEl) hintEl.textContent = ENDPOINT_HINTS[currentProvider] || 'Full endpoint URL'
+
+  const infoBox = document.getElementById('infoBox')
+  const info = INFOS[currentProvider]
+  if (info) { infoBox.textContent = info; infoBox.classList.remove('hidden') }
+  else { infoBox.classList.add('hidden') }
+}
+
+function updateModelPresets () {
+  const presets = PRESETS[currentProvider] || []
+  const current = document.getElementById('modelInput').value
+  document.getElementById('modelPresets').innerHTML = presets.map(p =>
+    `<button class="preset ${(p.v===current||p.l===current)?'active':''}"
+      data-v="${p.v}" onclick="selectModel(this)">${p.l}</button>`
+  ).join('')
+}
+
+function selectModel (el) {
+  document.getElementById('modelInput').value = el.dataset.v
+  document.querySelectorAll('.preset[data-v]').forEach(b => b.classList.remove('active'))
+  el.classList.add('active')
+}
+
+function syncAudiencePills () {
+  document.querySelectorAll('[data-a]').forEach(b => b.classList.toggle('active', b.dataset.a === currentAudience))
+}
+function selectAudience (el) { currentAudience = el.dataset.a; syncAudiencePills() }
+
+async function testConnection () {
+  const res = document.getElementById('testResult')
+  res.className = 'test-result'
+  res.textContent = 'Testing…'
+  res.style.display = 'block'
+
+  const cfg = {
+    provider: currentProvider,
+    apiKey: document.getElementById('apiKeyInput').value.trim(),
+    model: document.getElementById('modelInput').value.trim(),
+    customEndpoint: document.getElementById('endpointInput').value.trim(),
+  }
+
+  const result = await window.orb.chatRequest({
+    messages: [
+      { role: 'system', content: 'Reply with only the word: OK' },
+      { role: 'user', content: 'ping' }
+    ],
+    config: cfg
+  })
+
+  if (result.success) {
+    res.className = 'test-result ok'
+    res.textContent = '✓ Connected — response: ' + result.content.slice(0, 80)
+  } else {
+    res.className = 'test-result err'
+    res.textContent = '✕ ' + result.error
+  }
+}
+
+async function saveSettings () {
+  await window.orb.saveConfig({
+    provider: currentProvider,
+    apiKey: document.getElementById('apiKeyInput').value.trim(),
+    model: document.getElementById('modelInput').value.trim(),
+    customEndpoint: document.getElementById('endpointInput').value.trim(),
+    hotkey: document.getElementById('hotkeyInput').value.trim(),
+    audienceLevel: currentAudience,
+    theme: currentTheme,
+    screenshotOnActivate: document.getElementById('ssToggle').classList.contains('on'),
+  })
+  window.orb.closeSettings()
+}
+
+function closeSettings () { window.orb.closeSettings() }
+
+init()
+</script>
+</body>
+</html>

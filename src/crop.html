@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+
+html, body {
+  width: 100vw; height: 100vh;
+  overflow: hidden;
+  background: transparent;
+  cursor: crosshair;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+/* Screenshot fills the whole overlay — this IS the background */
+#bg {
+  position: absolute;
+  inset: 0;
+  background-size: 100% 100%;   /* stretch exactly to window bounds */
+  background-repeat: no-repeat;
+  background-position: 0 0;
+}
+
+/* Dark scrim on top of screenshot */
+#scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.52);
+  pointer-events: none;
+}
+
+/* The selected region "punched through" the scrim via clip-path */
+#clear {
+  position: absolute;
+  inset: 0;
+  /* We use a CSS clip trick: overlay the screenshot again, clipped to selection rect */
+  background-size: 100% 100%;
+  background-repeat: no-repeat;
+  background-position: 0 0;
+  /* clip-path set dynamically in JS */
+  clip-path: inset(0 100% 100% 0);   /* hidden by default */
+  pointer-events: none;
+}
+
+/* Selection border */
+#sel {
+  position: absolute;
+  border: 2px solid #7c6af7;
+  box-shadow: 0 0 0 1px rgba(124,106,247,0.4), inset 0 0 0 1px rgba(255,255,255,0.15);
+  border-radius: 2px;
+  display: none;
+  pointer-events: none;
+}
+
+/* Corner dots */
+.corner {
+  position: absolute;
+  width: 9px; height: 9px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.5);
+}
+.tl { top:-5px; left:-5px; }
+.tr { top:-5px; right:-5px; }
+.bl { bottom:-5px; left:-5px; }
+.br { bottom:-5px; right:-5px; }
+
+/* Size badge */
+#badge {
+  position: absolute;
+  top: calc(100% + 7px);
+  left: 0;
+  background: rgba(10,10,20,0.9);
+  color: rgba(255,255,255,0.85);
+  font: 11px/1 'SF Mono','Geist Mono',monospace;
+  padding: 3px 8px;
+  border-radius: 5px;
+  white-space: nowrap;
+  pointer-events: none;
+}
+
+/* Bottom instruction bar */
+#tip {
+  position: fixed;
+  bottom: 24px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(10,10,20,0.92);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(255,255,255,0.85);
+  font: 13px/1 -apple-system, sans-serif;
+  padding: 10px 22px;
+  border-radius: 12px;
+  display: flex; gap: 20px; align-items: center;
+  backdrop-filter: blur(8px);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.key {
+  background: rgba(255,255,255,0.14);
+  border-radius: 4px;
+  padding: 2px 8px;
+  font-size: 11px;
+  color: rgba(255,255,255,0.7);
+}
+</style>
+</head>
+<body>
+
+<div id="bg"></div>
+<div id="scrim"></div>
+<div id="clear"></div>
+
+<div id="sel">
+  <div class="corner tl"></div>
+  <div class="corner tr"></div>
+  <div class="corner bl"></div>
+  <div class="corner br"></div>
+  <div id="badge">0 × 0</div>
+</div>
+
+<div id="tip">
+  <span>Drag to select a region</span>
+  <span><span class="key">Enter</span> Capture</span>
+  <span><span class="key">Esc</span> Cancel</span>
+</div>
+
+<script>
+const selEl   = document.getElementById('sel')
+const clearEl = document.getElementById('clear')
+const badge   = document.getElementById('badge')
+const bgEl    = document.getElementById('bg')
+
+let startX = 0, startY = 0, isDragging = false
+let selRect = null   // current selection in CSS/logical pixels
+
+// ── Init: receive screenshot from main ──────────────────────────────────────
+window.orb.onCropInit(({ dataURL, dispW, dispH }) => {
+  // Set both layers to the screenshot
+  bgEl.style.backgroundImage    = `url('${dataURL}')`
+  clearEl.style.backgroundImage = `url('${dataURL}')`
+})
+
+// ── Mouse drag ──────────────────────────────────────────────────────────────
+document.addEventListener('mousedown', e => {
+  if (e.button !== 0) return
+  startX = e.clientX; startY = e.clientY
+  isDragging = true
+  selEl.style.display = 'block'
+  updateSel(e.clientX, e.clientY)
+})
+
+document.addEventListener('mousemove', e => {
+  if (!isDragging) return
+  updateSel(e.clientX, e.clientY)
+})
+
+document.addEventListener('mouseup', e => {
+  if (!isDragging) return
+  isDragging = false
+  updateSel(e.clientX, e.clientY)
+  // Reject tiny selections
+  if (!selRect || selRect.w < 10 || selRect.h < 10) {
+    selEl.style.display = 'none'
+    clearEl.style.clipPath = 'inset(0 100% 100% 0)'
+    selRect = null
+  }
+})
+
+function updateSel (cx, cy) {
+  const x = Math.min(startX, cx)
+  const y = Math.min(startY, cy)
+  const w = Math.abs(cx - startX)
+  const h = Math.abs(cy - startY)
+
+  // Position the selection border box
+  selEl.style.left   = x + 'px'
+  selEl.style.top    = y + 'px'
+  selEl.style.width  = w + 'px'
+  selEl.style.height = h + 'px'
+
+  badge.textContent = `${Math.round(w)} × ${Math.round(h)}`
+
+  // Punch clear window in the scrim using clip-path on the duplicate bg layer
+  // inset(top right bottom left) — all in px from respective edges
+  const vw = window.innerWidth
+  const vh = window.innerHeight
+  const top    = y
+  const right  = vw - (x + w)
+  const bottom = vh - (y + h)
+  const left   = x
+  clearEl.style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px)`
+
+  selRect = { x, y, w, h }
+}
+
+// ── Keyboard ────────────────────────────────────────────────────────────────
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    window.orb.cropCancelled()
+  } else if (e.key === 'Enter') {
+    if (selRect && selRect.w > 10 && selRect.h > 10) {
+      // Send logical pixel coords — main process scales to image pixels
+      window.orb.cropSelected({ x: selRect.x, y: selRect.y, w: selRect.w, h: selRect.h })
+    }
+  }
+})
+</script>
+</body>
+</html>

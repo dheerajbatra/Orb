@@ -1,0 +1,435 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Orb</title>
+<link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@300;400;500&family=Instrument+Serif:ital@0;1&family=Geist:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.css">
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/katex.min.js"></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/KaTeX/0.16.9/contrib/auto-render.min.js"></script>
+<style>
+:root {
+  --bg:       #0e0e16;
+  --bg2:      #14141f;
+  --bg3:      #1c1c2c;
+  --bg4:      #222236;
+  --border:   rgba(255,255,255,0.08);
+  --border2:  rgba(255,255,255,0.14);
+  --text:     rgba(255,255,255,0.88);
+  --text2:    rgba(255,255,255,0.44);
+  --text3:    rgba(255,255,255,0.24);
+  --accent:   #7c6af7;
+  --accent-s: rgba(124,106,247,0.15);
+  --accent-g: rgba(124,106,247,0.35);
+  --green:    #4ade80;
+  --amber:    #fbbf24;
+  --red:      #f87171;
+  --user-bg:  rgba(255,255,255,0.06);
+  --code-bg:  rgba(0,0,0,0.4);
+  --shadow:   0 24px 60px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.05);
+}
+.light {
+  --bg:       #f5f5fa;
+  --bg2:      #eeeef6;
+  --bg3:      #e6e6f0;
+  --bg4:      #dcdcec;
+  --border:   rgba(0,0,0,0.08);
+  --border2:  rgba(0,0,0,0.14);
+  --text:     rgba(0,0,0,0.86);
+  --text2:    rgba(0,0,0,0.46);
+  --text3:    rgba(0,0,0,0.28);
+  --accent:   #5b4fd4;
+  --accent-s: rgba(91,79,212,0.1);
+  --accent-g: rgba(91,79,212,0.3);
+  --user-bg:  rgba(0,0,0,0.04);
+  --code-bg:  rgba(0,0,0,0.06);
+  --shadow:   0 12px 40px rgba(0,0,0,0.15), 0 0 0 1px rgba(0,0,0,0.07);
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { width:100%; height:100%; background:var(--bg); overflow:hidden; font-family:'Geist',-apple-system,sans-serif; -webkit-font-smoothing:antialiased; user-select:none; }
+
+/* ─── LAYOUT: outer wrapper for main + history sidebar ─────────────────── */
+#app { width:100%; height:100%; display:flex; position:relative; }
+
+/* ─── HISTORY SIDEBAR ───────────────────────────────────────────────────── */
+#history-sidebar {
+  position:absolute;
+  top:0; left:0; bottom:0;
+  width:240px;
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex; flex-direction:column;
+  transform:translateX(-100%);
+  transition:transform 0.25s cubic-bezier(0.4,0,0.2,1);
+  z-index:200;
+  border-radius:18px 0 0 18px;
+}
+#history-sidebar.open { transform:translateX(0); }
+
+.hist-header {
+  padding:14px 14px 10px;
+  border-bottom:1px solid var(--border);
+  display:flex; align-items:center; gap:8px;
+  flex-shrink:0;
+  -webkit-app-region:drag;
+}
+.hist-title { font-size:12px; font-weight:600; color:var(--text); flex:1; }
+.hist-close {
+  -webkit-app-region:no-drag;
+  width:22px; height:22px; border-radius:6px; border:none;
+  background:transparent; color:var(--text2); cursor:pointer;
+  display:flex; align-items:center; justify-content:center; font-size:12px;
+  transition:all .15s;
+}
+.hist-close:hover { background:var(--bg3); color:var(--text); }
+
+.hist-new-btn {
+  -webkit-app-region:no-drag;
+  margin:10px 12px 6px;
+  padding:8px 12px; border-radius:9px;
+  background:var(--accent-s); border:1px solid var(--accent-g);
+  color:var(--accent); font-size:12px; font-weight:500;
+  cursor:pointer; text-align:left; transition:all .15s;
+  display:flex; align-items:center; gap:7px;
+}
+.hist-new-btn:hover { background:var(--accent); color:#fff; border-color:var(--accent); }
+
+.hist-sessions {
+  flex:1; overflow-y:auto; padding:6px 8px;
+  display:flex; flex-direction:column; gap:3px;
+  scrollbar-width:thin; scrollbar-color:var(--border2) transparent;
+}
+
+.hist-session {
+  -webkit-app-region:no-drag;
+  padding:8px 10px; border-radius:8px;
+  cursor:pointer; transition:all .15s;
+  position:relative; border:1px solid transparent;
+  display:flex; flex-direction:column; gap:2px;
+}
+.hist-session:hover { background:var(--bg3); border-color:var(--border); }
+.hist-session.active { background:var(--accent-s); border-color:var(--accent-g); }
+.hist-session-title { font-size:11.5px; color:var(--text); overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.hist-session-meta { font-size:10px; color:var(--text3); font-family:'Geist Mono',monospace; }
+.hist-session-del {
+  position:absolute; top:5px; right:6px;
+  width:18px; height:18px; border-radius:4px; border:none;
+  background:transparent; color:var(--text3); cursor:pointer;
+  font-size:10px; display:none; align-items:center; justify-content:center;
+  transition:all .15s;
+}
+.hist-session:hover .hist-session-del { display:flex; }
+.hist-session-del:hover { background:rgba(248,113,113,0.15); color:var(--red); }
+
+/* ─── MAIN SHELL ───────────────────────────────────────────────────────── */
+#shell {
+  flex:1; min-width:0;
+  background:var(--bg);
+  border-radius:18px;
+  border:1px solid var(--border);
+  box-shadow:var(--shadow);
+  display:flex; flex-direction:column;
+  overflow:hidden;
+  animation:shellIn .3s cubic-bezier(.34,1.56,.64,1) both;
+  transition:background .2s;
+}
+@keyframes shellIn { from{opacity:0;transform:scale(.93) translateY(10px)} to{opacity:1;transform:scale(1) translateY(0)} }
+
+/* ─── HEADER ────────────────────────────────────────────────────────────── */
+.drag-bar { -webkit-app-region:drag; height:6px; flex-shrink:0; }
+.header {
+  -webkit-app-region:drag;
+  display:flex; align-items:center; gap:9px;
+  padding:7px 12px 6px; flex-shrink:0;
+  border-bottom:1px solid var(--border);
+}
+.header-r { -webkit-app-region:no-drag; display:flex; gap:5px; align-items:center; margin-left:auto; }
+.orb-mark {
+  width:24px; height:24px; border-radius:7px;
+  background:var(--accent-s); border:1px solid var(--accent-g);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; flex-shrink:0; -webkit-app-region:no-drag;
+}
+.orb-name { font-size:13px; font-weight:600; color:var(--text); letter-spacing:-.02em; }
+.sdot { width:6px; height:6px; border-radius:50%; background:var(--green); box-shadow:0 0 5px var(--green); animation:pulse 2.5s infinite; }
+.sdot.err  { background:var(--red);   box-shadow:0 0 5px var(--red);   animation:none; }
+.sdot.busy { background:var(--amber); box-shadow:0 0 5px var(--amber); animation:none; }
+@keyframes pulse { 0%,100%{opacity:1} 50%{opacity:.35} }
+.ibtn {
+  -webkit-app-region:no-drag;
+  width:24px; height:24px; border-radius:6px;
+  border:1px solid var(--border); background:transparent;
+  color:var(--text2); display:flex; align-items:center;
+  justify-content:center; cursor:pointer; font-size:11px; transition:all .15s;
+}
+.ibtn:hover { background:var(--bg3); color:var(--text); border-color:var(--border2); }
+.ibtn.active { background:var(--accent-s); border-color:var(--accent-g); color:var(--accent); }
+
+/* ─── CONTEXT ───────────────────────────────────────────────────────────── */
+.ctx {
+  margin:7px 10px 5px;
+  padding:5px 8px; background:var(--bg3); border:1px solid var(--border);
+  border-radius:9px; display:flex; align-items:center; gap:6px; flex-shrink:0;
+}
+.ctx-icon { font-size:11px; flex-shrink:0; }
+.ctx-text { font-size:10px; color:var(--text2); font-family:'Geist Mono',monospace; flex:1; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
+.ctx-btn {
+  -webkit-app-region:no-drag;
+  padding:2px 7px; border-radius:5px; border:1px solid var(--border2);
+  background:transparent; color:var(--text2); font-size:10px;
+  cursor:pointer; transition:all .15s; white-space:nowrap;
+}
+.ctx-btn:hover { background:var(--bg2); color:var(--text); }
+.ctx-btn + .ctx-btn { margin-left:2px; }
+
+/* ─── PILLS ─────────────────────────────────────────────────────────────── */
+.pills {
+  display:flex; gap:4px; padding:0 10px 7px;
+  flex-wrap:wrap; align-items:center; flex-shrink:0; -webkit-app-region:no-drag;
+}
+.pill-lbl { font-size:9px; font-family:'Geist Mono',monospace; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-right:1px; }
+.pill-g { display:flex; gap:2px; }
+.pill {
+  padding:2px 8px; border-radius:20px; border:1px solid var(--border);
+  background:transparent; color:var(--text2); font-size:10.5px; cursor:pointer; transition:all .15s;
+}
+.pill:hover { border-color:var(--border2); color:var(--text); }
+.pill.active { background:var(--accent-s); border-color:var(--accent-g); color:var(--accent); }
+
+/* ─── RESPONSE MODE BAR ─────────────────────────────────────────────────── */
+.mode-bar {
+  display:flex; gap:4px; padding:0 10px 7px;
+  align-items:center; flex-shrink:0; -webkit-app-region:no-drag;
+  border-bottom:1px solid var(--border);
+  padding-bottom:8px;
+}
+.mode-lbl { font-size:9px; font-family:'Geist Mono',monospace; color:var(--text3); text-transform:uppercase; letter-spacing:.08em; margin-right:2px; }
+.mode-btn {
+  padding:3px 9px; border-radius:20px; border:1px solid var(--border);
+  background:transparent; color:var(--text2); font-size:10.5px; cursor:pointer; transition:all .15s;
+  display:flex; align-items:center; gap:4px;
+}
+.mode-btn:hover { border-color:var(--border2); color:var(--text); }
+.mode-btn.active { background:var(--accent-s); border-color:var(--accent-g); color:var(--accent); }
+.mode-btn .mode-dot { width:5px; height:5px; border-radius:50%; background:currentColor; opacity:.7; }
+
+/* ─── MESSAGES ──────────────────────────────────────────────────────────── */
+.msgs { flex:1; min-height:0; overflow-y:auto; overflow-x:hidden; padding:8px 10px; display:flex; flex-direction:column; gap:12px; scrollbar-width:thin; scrollbar-color:var(--border2) transparent; }
+.msgs::-webkit-scrollbar { width:3px; }
+.msgs::-webkit-scrollbar-thumb { background:var(--border2); border-radius:2px; }
+
+.msg { display:flex; flex-direction:column; gap:3px; animation:msgIn .22s ease both; }
+@keyframes msgIn { from{opacity:0;transform:translateY(5px)} to{opacity:1;transform:translateY(0)} }
+.msg-meta { display:flex; align-items:center; gap:6px; padding:0 2px; }
+.msg-role { font-size:9px; font-family:'Geist Mono',monospace; text-transform:uppercase; letter-spacing:.07em; }
+.msg.assistant .msg-role { color:var(--accent); }
+.msg.user      .msg-role { color:var(--text3); }
+.msg-time { font-size:9px; font-family:'Geist Mono',monospace; color:var(--text3); margin-left:auto; }
+.bubble { padding:9px 12px; border-radius:12px; font-size:13px; line-height:1.65; color:var(--text); word-break:break-word; }
+.msg.user .bubble { background:var(--user-bg); border:1px solid var(--border); border-top-right-radius:3px; align-self:flex-end; max-width:92%; color:var(--text2); font-size:12.5px; }
+.msg.assistant .bubble { background:var(--bg2); border:1px solid var(--border); border-top-left-radius:3px; }
+
+/* Markdown */
+.bubble code { font-family:'Geist Mono',monospace; font-size:11.5px; background:var(--bg3); padding:1px 5px; border-radius:4px; color:#93c5fd; }
+.light .bubble code { color:#4338ca; }
+.bubble pre { background:var(--code-bg); border:1px solid var(--border); border-radius:8px; padding:10px; overflow-x:auto; margin:7px 0; }
+.bubble pre code { background:none; padding:0; font-size:11px; color:var(--accent); }
+.bubble strong { color:var(--text); font-weight:600; }
+.bubble em { font-style:italic; color:var(--text2); }
+.bubble h3 { font-size:13px; font-weight:600; margin:10px 0 4px; color:var(--text); }
+.bubble ul,.bubble ol { padding-left:16px; margin:4px 0; }
+.bubble li { margin:2px 0; font-size:12.5px; }
+.bubble p { margin-bottom:5px; }
+.bubble p:last-child { margin-bottom:0; }
+.bubble a { color:var(--accent); text-decoration:none; }
+.bubble .katex { font-size:1em; }
+.bubble .katex-display { margin:8px 0; overflow-x:auto; }
+
+/* Step-by-step hint badge */
+.sbs-badge {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 8px; border-radius:20px;
+  background:rgba(251,191,36,0.12); border:1px solid rgba(251,191,36,0.25);
+  color:var(--amber); font-size:10px; font-family:'Geist Mono',monospace;
+  margin-bottom:6px;
+}
+
+.msg-ss { width:100%; max-height:120px; object-fit:cover; border-radius:8px; border:1px solid var(--border); margin-bottom:6px; display:block; }
+
+/* Typing */
+.dots { display:flex; gap:4px; padding:10px 12px; align-items:center; }
+.dot { width:5px; height:5px; border-radius:50%; background:var(--accent); opacity:.4; animation:bounce 1.1s infinite ease-in-out; }
+.dot:nth-child(2){animation-delay:.15s}.dot:nth-child(3){animation-delay:.3s}
+@keyframes bounce { 0%,80%,100%{transform:scale(.7);opacity:.3} 40%{transform:scale(1.2);opacity:1} }
+
+/* ─── SUGGESTIONS ───────────────────────────────────────────────────────── */
+.sugs { display:flex; flex-wrap:wrap; gap:4px; padding:0 10px 7px; flex-shrink:0; -webkit-app-region:no-drag; }
+.sug { padding:3px 9px; border-radius:20px; border:1px solid var(--border); background:transparent; color:var(--text2); font-size:10.5px; cursor:pointer; transition:all .15s; }
+.sug:hover { background:var(--accent-s); border-color:var(--accent-g); color:var(--accent); }
+
+/* ─── SCREENSHOT PENDING ─────────────────────────────────────────────────── */
+.ss-pending { margin:0 10px 6px; position:relative; display:none; flex-shrink:0; }
+.ss-pending img { width:100%; max-height:80px; object-fit:cover; border-radius:8px; border:1px solid var(--border); }
+.ss-pending button { position:absolute; top:4px; right:4px; width:20px; height:20px; border-radius:50%; background:rgba(0,0,0,.7); border:none; color:#fff; cursor:pointer; font-size:10px; display:flex; align-items:center; justify-content:center; }
+
+/* ─── DIVIDER ────────────────────────────────────────────────────────────── */
+.divider { height:1px; background:var(--border); margin:0 10px; flex-shrink:0; }
+
+/* ─── INPUT ──────────────────────────────────────────────────────────────── */
+.input-area { padding:7px 10px 10px; flex-shrink:0; -webkit-app-region:no-drag; display:flex; flex-direction:column; gap:6px; }
+.input-row { display:flex; gap:6px; align-items:flex-end; }
+textarea#chatInput {
+  flex:1; background:var(--bg3); border:1px solid var(--border); border-radius:11px;
+  padding:8px 11px; font-size:13px; color:var(--text); font-family:inherit;
+  outline:none; resize:none; min-height:38px; max-height:120px; line-height:1.5;
+  -webkit-app-region:no-drag; user-select:text; transition:border-color .2s,box-shadow .2s;
+}
+textarea#chatInput:focus { border-color:var(--accent-g); box-shadow:0 0 0 3px var(--accent-s); }
+textarea#chatInput::placeholder { color:var(--text3); }
+
+.send-btn { width:36px; height:36px; border-radius:10px; background:var(--accent); border:none; color:#fff; font-size:14px; cursor:pointer; flex-shrink:0; display:flex; align-items:center; justify-content:center; box-shadow:0 4px 14px var(--accent-g); transition:transform .15s,opacity .15s,box-shadow .2s; }
+.send-btn:hover { transform:scale(1.06); box-shadow:0 6px 20px var(--accent-g); }
+.send-btn:active { transform:scale(.95); }
+.send-btn:disabled { opacity:.35; cursor:not-allowed; transform:none; }
+
+.input-footer { display:flex; align-items:center; gap:6px; }
+.model-hint { font-size:9.5px; color:var(--text3); font-family:'Geist Mono',monospace; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; flex:1; }
+.clear-btn { padding:2px 7px; border-radius:5px; border:1px solid var(--border); background:transparent; color:var(--text3); font-size:10px; cursor:pointer; transition:all .15s; white-space:nowrap; }
+.clear-btn:hover { color:var(--text2); border-color:var(--border2); }
+
+/* ─── EMPTY STATE ────────────────────────────────────────────────────────── */
+.empty { flex:1; display:flex; flex-direction:column; align-items:center; justify-content:center; gap:7px; padding:20px; text-align:center; }
+.empty-g { font-size:26px; opacity:.3; margin-bottom:4px; }
+.empty-t { font-size:13px; font-family:'Instrument Serif',serif; color:var(--text2); font-style:italic; }
+.empty-s { font-size:10px; font-family:'Geist Mono',monospace; color:var(--text3); }
+
+/* ─── HISTORY OVERLAY BACKDROP ───────────────────────────────────────────── */
+#hist-backdrop {
+  position:absolute; inset:0; z-index:199;
+  background:rgba(0,0,0,0.3);
+  display:none; border-radius:18px;
+}
+#hist-backdrop.open { display:block; }
+</style>
+</head>
+<body>
+<div id="app">
+
+  <!-- History sidebar -->
+  <div id="history-sidebar">
+    <div class="hist-header">
+      <span style="font-size:13px">🕐</span>
+      <span class="hist-title">History</span>
+      <button class="hist-close" onclick="toggleHistory()">✕</button>
+    </div>
+    <button class="hist-new-btn" onclick="newSession()">
+      <span>✦</span> New conversation
+    </button>
+    <div class="hist-sessions" id="histSessions">
+      <!-- populated by JS -->
+    </div>
+  </div>
+
+  <!-- Backdrop for history sidebar -->
+  <div id="hist-backdrop" onclick="toggleHistory()"></div>
+
+  <!-- Main shell -->
+  <div id="shell">
+    <div class="drag-bar"></div>
+
+    <!-- Header -->
+    <div class="header">
+      <div class="orb-mark">✦</div>
+      <span class="orb-name">Orb</span>
+      <div class="header-r">
+        <div class="sdot" id="sdot"></div>
+        <button class="ibtn" id="histBtn" onclick="toggleHistory()" title="History">🕐</button>
+        <button class="ibtn" onclick="captureWindow()" title="Capture window">⊡</button>
+        <button class="ibtn" onclick="window.orb.openSettings()" title="Settings">⚙</button>
+        <button class="ibtn" onclick="window.orb.hideWindow()" title="Hide">−</button>
+      </div>
+    </div>
+
+    <!-- Context strip -->
+    <div class="ctx">
+      <span class="ctx-icon" id="ctxIcon">⬜</span>
+      <span class="ctx-text" id="ctxText">No screen context — press Window or Region</span>
+      <button class="ctx-btn" onclick="captureWindow()">Window</button>
+      <button class="ctx-btn" onclick="captureRegion()">Region</button>
+    </div>
+
+    <!-- Level + Mode pills -->
+    <div class="pills">
+      <span class="pill-lbl">Level</span>
+      <div class="pill-g">
+        <button class="pill"        data-level="highschool"   onclick="setLevel(this)">High School</button>
+        <button class="pill"        data-level="college"      onclick="setLevel(this)">College</button>
+        <button class="pill active" data-level="professional" onclick="setLevel(this)">Pro</button>
+      </div>
+      <span class="pill-lbl" style="margin-left:5px">Mode</span>
+      <div class="pill-g">
+        <button class="pill active" data-mode="auto"     onclick="setMode(this)">Auto</button>
+        <button class="pill"        data-mode="code"     onclick="setMode(this)">Code</button>
+        <button class="pill"        data-mode="math"     onclick="setMode(this)">Math</button>
+        <button class="pill"        data-mode="research" onclick="setMode(this)">Research</button>
+      </div>
+    </div>
+
+    <!-- Response mode (Answer vs Step-by-step vs Hint) -->
+    <div class="mode-bar">
+      <span class="mode-lbl">Response</span>
+      <button class="mode-btn active" data-resp="answer"   onclick="setRespMode(this)" title="Give me the full answer">
+        <span class="mode-dot"></span> Answer
+      </button>
+      <button class="mode-btn" data-resp="stepbystep" onclick="setRespMode(this)" title="Walk me through it step by step">
+        <span class="mode-dot"></span> Step by step
+      </button>
+      <button class="mode-btn" data-resp="hint" onclick="setRespMode(this)" title="Just give me a hint, I want to figure it out">
+        <span class="mode-dot"></span> Hint only
+      </button>
+    </div>
+
+    <!-- Messages -->
+    <div class="msgs" id="msgs">
+      <div class="empty" id="emptyState">
+        <div class="empty-g">✦</div>
+        <div class="empty-t">What can I help with?</div>
+        <div class="empty-s">Capture a window or region for context</div>
+      </div>
+    </div>
+
+    <!-- Suggestions -->
+    <div class="sugs" id="sugs"></div>
+
+    <!-- Screenshot pending preview -->
+    <div class="ss-pending" id="ssPending">
+      <img id="ssThumb" src="" alt="screenshot">
+      <button onclick="clearScreenshot()">✕</button>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- Input -->
+    <div class="input-area">
+      <div class="input-row">
+        <textarea id="chatInput"
+          placeholder="Ask anything… (Enter to send, Shift+Enter for newline)"
+          rows="1"
+          onkeydown="handleKey(event)"
+          oninput="autoResize(this)"
+        ></textarea>
+        <button class="send-btn" id="sendBtn" onclick="sendMessage()">↑</button>
+      </div>
+      <div class="input-footer">
+        <span class="model-hint" id="modelHint">—</span>
+        <button class="clear-btn" onclick="saveAndClearChat()">New chat</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script src="renderer.js"></script>
+</body>
+</html>

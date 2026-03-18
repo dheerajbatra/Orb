@@ -1,0 +1,24 @@
+# Claude Code
+.claude/
+
+# Dependencies
+node_modules/
+
+# Build output
+dist/
+
+# macOS
+.DS_Store
+**/.DS_Store
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+
+# Editor
+.vscode/
+.idea/
+
+# Environment / secrets
+.env
+*.env.local
