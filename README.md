@@ -32,7 +32,7 @@ Click the ⚙ icon in the Orb window, enter your API key, and hit Save.
 - **Floating overlay** — always on top, transparent background, drag anywhere
 - **Global hotkey** — `⌘⇧Space` to show/hide from any app
 - **Screen capture** — captures your screen for context when you ask questions
-- **Multi-provider** — Anthropic Claude, OpenAI, any OpenAI-compatible API, Ollama, LM Studio
+- **Multi-provider** — Anthropic Claude, OpenAI, any OpenAI-compatible API, Ollama, LM Studio. Also tested with Mac optimized MLX models. 
 - **Audience levels** — High School / College / Professional tone switching
 - **Context modes** — Auto / Code / Math / Research
 - **Markdown rendering** — code blocks, bold, headers, lists
