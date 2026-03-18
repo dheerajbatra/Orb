@@ -13,7 +13,7 @@
   "build": {
     "appId": "com.orb.assistant",
     "productName": "Orb",
-    "copyright": "Copyright © 2025",
+    "copyright": "Copyright © 2026",
     "mac": {
       "category": "public.app-category.productivity",
       "target": [
